@@ -1,0 +1,63 @@
+---
+title: "Exploration of PDB Metadata"
+author: "Alicia Key"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Exploration of PDB Metadata
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Include libraries
+
+```{r error=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+```
+
+## Load the dataset
+
+```{r}
+pdb_metadata <- read_csv("data/pdb_data_no_dups.csv")
+```
+
+### Look at the head of the dataset
+
+```{r}
+head(pdb_metadata)
+```
+
+## Visualization
+
+### Visuailize Missing Value Counts
+
+```{r}
+pdb_metadata_total_rows = nrow(pdb_metadata)
+
+pdb_metadata %>%
+  summarize(
+    structureIdNa = sum(is.na(structureId)) / pdb_metadata_total_rows * 100,
+    classificationNa = sum(is.na(classification)) / pdb_metadata_total_rows * 100,
+    experimentalTechniqueNa = sum(is.na(experimentalTechnique)) / pdb_metadata_total_rows * 100,
+    macromoleculeTypeNa = sum(is.na(macromoleculeType)) / pdb_metadata_total_rows * 100,
+    residueCountNa = sum(is.na(residueCount)) / pdb_metadata_total_rows * 100,
+    resolutionNa = sum(is.na(resolution)) / pdb_metadata_total_rows * 100,
+    structureMolecularWeightNa = sum(is.na(structureMolecularWeight)) / pdb_metadata_total_rows * 100,
+    crystallizationMethodNa = sum(is.na(crystallizationMethod)) / pdb_metadata_total_rows * 100,
+    crystallizationTempK = sum(is.na(crystallizationTempK)) / pdb_metadata_total_rows * 100,
+    densityMatthewsNa = sum(is.na(densityMatthews)) / pdb_metadata_total_rows * 100,
+    densityPercentSolNa = sum(is.na(densityPercentSol)) / pdb_metadata_total_rows * 100,
+    pdbxDetailsNa = sum(is.na(pdbxDetails)) / pdb_metadata_total_rows * 100,
+    phValueNa = sum(is.na(phValue)) / pdb_metadata_total_rows * 100,
+    publicationYearNa = sum(is.na(publicationYear)) / pdb_metadata_total_rows * 100
+  ) %>%
+  pivot_longer(everything(), names_to = "column", values_to = "percent_missing") %>%
+  ggplot(aes(x = column, y = percent_missing)) +
+    geom_col() +
+    coord_flip()
+```
