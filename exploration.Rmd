@@ -32,7 +32,7 @@ options(dplyr.summarise.inform = FALSE)
 ## Load the dataset
 
 ```{r error=FALSE, warning=FALSE}
-pdb <- read_csv("data/pdb_data_no_dups.csv", show_col_types = FALSE)
+pdb <- read_csv("data/pdb_data_no_dups.csv.gz", show_col_types = FALSE)
 ```
 
 ### Look at the head of the dataset
