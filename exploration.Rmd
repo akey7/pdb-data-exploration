@@ -23,47 +23,49 @@ library(ggplot2)
 ## Load the dataset
 
 ```{r}
-pdb_metadata <- read_csv("data/pdb_data_no_dups.csv")
+pdb <- read_csv("data/pdb_data_no_dups.csv")
 ```
 
 ### Look at the head of the dataset
 
 ```{r}
-head(pdb_metadata)
+head(pdb)
 ```
 
-## Visualization
+## Missing data
+
+When I looked at the .csv in Excel, I found lots of missing data in the dataset. In this section, I quantify how much missing data there is.
 
 ### Bar graph of missing value counts
 
 ```{r}
-pdb_metadata_total_rows = nrow(pdb_metadata)
+pdb_total_rows = nrow(pdb)
 
-pdb_metadata_missing <- pdb_metadata %>%
+pdb_missing <- pdb %>%
   summarize(
-    structureIdNa = sum(is.na(structureId)) / pdb_metadata_total_rows * 100,
-    classificationNa = sum(is.na(classification)) / pdb_metadata_total_rows * 100,
-    experimentalTechniqueNa = sum(is.na(experimentalTechnique)) / pdb_metadata_total_rows * 100,
-    macromoleculeTypeNa = sum(is.na(macromoleculeType)) / pdb_metadata_total_rows * 100,
-    residueCountNa = sum(is.na(residueCount)) / pdb_metadata_total_rows * 100,
-    resolutionNa = sum(is.na(resolution)) / pdb_metadata_total_rows * 100,
-    structureMolecularWeightNa = sum(is.na(structureMolecularWeight)) / pdb_metadata_total_rows * 100,
-    crystallizationMethodNa = sum(is.na(crystallizationMethod)) / pdb_metadata_total_rows * 100,
-    crystallizationTempK = sum(is.na(crystallizationTempK)) / pdb_metadata_total_rows * 100,
-    densityMatthewsNa = sum(is.na(densityMatthews)) / pdb_metadata_total_rows * 100,
-    densityPercentSolNa = sum(is.na(densityPercentSol)) / pdb_metadata_total_rows * 100,
-    pdbxDetailsNa = sum(is.na(pdbxDetails)) / pdb_metadata_total_rows * 100,
-    phValueNa = sum(is.na(phValue)) / pdb_metadata_total_rows * 100,
-    publicationYearNa = sum(is.na(publicationYear)) / pdb_metadata_total_rows * 100
+    structureIdNa = sum(is.na(structureId)) / pdb_total_rows * 100,
+    classificationNa = sum(is.na(classification)) / pdb_total_rows * 100,
+    experimentalTechniqueNa = sum(is.na(experimentalTechnique)) / pdb_total_rows * 100,
+    macromoleculeTypeNa = sum(is.na(macromoleculeType)) / pdb_total_rows * 100,
+    residueCountNa = sum(is.na(residueCount)) / pdb_total_rows * 100,
+    resolutionNa = sum(is.na(resolution)) / pdb_total_rows * 100,
+    structureMolecularWeightNa = sum(is.na(structureMolecularWeight)) / pdb_total_rows * 100,
+    crystallizationMethodNa = sum(is.na(crystallizationMethod)) / pdb_total_rows * 100,
+    crystallizationTempK = sum(is.na(crystallizationTempK)) / pdb_total_rows * 100,
+    densityMatthewsNa = sum(is.na(densityMatthews)) / pdb_total_rows * 100,
+    densityPercentSolNa = sum(is.na(densityPercentSol)) / pdb_total_rows * 100,
+    pdbxDetailsNa = sum(is.na(pdbxDetails)) / pdb_total_rows * 100,
+    phValueNa = sum(is.na(phValue)) / pdb_total_rows * 100,
+    publicationYearNa = sum(is.na(publicationYear)) / pdb_total_rows * 100
   ) %>%
   pivot_longer(everything(), names_to = "column", values_to = "percent_missing") %>%
   arrange(percent_missing)
 
-pdb_metadata_missing %>%
+pdb_missing %>%
   mutate(
     column_sort = factor(
       column,
-      levels = pdb_metadata_missing$column
+      levels = pdb_missing$column
     )
   ) %>%
   ggplot(aes(x = column_sort, y = percent_missing)) +
@@ -74,3 +76,33 @@ pdb_metadata_missing %>%
       subtitle = "Higher is worse"
     )
 ```
+
+### What if I dropped all `NA`?
+
+Percentage observations remaining if all rows that have `NA` were dropped:
+
+```{r}
+pdb_no_na_count <- pdb %>%
+  drop_na() %>%
+  nrow()
+
+pdb_no_na_count / pdb_total_rows * 100
+```
+
+Number of observations remaining if all the `NA`s were dropped.
+
+```{r}
+pdb_total_rows - pdb_no_na_count
+```
+
+### Plan of action.
+
+For this exploration, I will simply drop all rows that have any `NA` variables.
+
+In the future, it would be interesting to train a model on the sequence data that accompanies this dataset, to see if I could fill in missing values based on sequence data.
+
+```{r}
+pdb_clean <- pdb %>%
+  drop_na()
+```
+
