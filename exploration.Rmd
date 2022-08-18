@@ -34,12 +34,12 @@ head(pdb_metadata)
 
 ## Visualization
 
-### Visuailize Missing Value Counts
+### Bar graph of missing value counts
 
 ```{r}
 pdb_metadata_total_rows = nrow(pdb_metadata)
 
-pdb_metadata %>%
+pdb_metadata_missing <- pdb_metadata %>%
   summarize(
     structureIdNa = sum(is.na(structureId)) / pdb_metadata_total_rows * 100,
     classificationNa = sum(is.na(classification)) / pdb_metadata_total_rows * 100,
@@ -57,7 +57,16 @@ pdb_metadata %>%
     publicationYearNa = sum(is.na(publicationYear)) / pdb_metadata_total_rows * 100
   ) %>%
   pivot_longer(everything(), names_to = "column", values_to = "percent_missing") %>%
-  ggplot(aes(x = column, y = percent_missing)) +
+  arrange(percent_missing)
+
+pdb_metadata_missing %>%
+  mutate(
+    column_sort = factor(
+      column,
+      levels = pdb_metadata_missing$column
+    )
+  ) %>%
+  ggplot(aes(x = column_sort, y = percent_missing)) +
     geom_col() +
     coord_flip() +
     labs(
