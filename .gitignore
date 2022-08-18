@@ -46,3 +46,6 @@ vignettes/*.pdf
 
 # Ignore data csvs (these are stored elsewhere)
 data/*.csv
+
+# Ignore intermediate HTML files
+*.html
