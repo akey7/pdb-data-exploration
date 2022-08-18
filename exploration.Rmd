@@ -59,5 +59,9 @@ pdb_metadata %>%
   pivot_longer(everything(), names_to = "column", values_to = "percent_missing") %>%
   ggplot(aes(x = column, y = percent_missing)) +
     geom_col() +
-    coord_flip()
+    coord_flip() +
+    labs(
+      title = "Percent missing per column",
+      subtitle = "Higher is worse"
+    )
 ```
