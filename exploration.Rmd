@@ -11,13 +11,21 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Include libraries
+## Include libraries and set plot theme.
+
+### Libraries
 
 ```{r error=FALSE, warning=FALSE}
 library(dplyr)
 library(tidyr)
 library(readr)
 library(ggplot2)
+```
+
+### Theme set
+
+```{r}
+theme_set(theme_minimal())
 ```
 
 ## Load the dataset
@@ -95,20 +103,49 @@ Number of observations remaining if all the `NA`s were dropped.
 pdb_total_rows - pdb_no_na_count
 ```
 
-### Plan of action: drop rows with `NA`
+### Plan of action: drop rows with `NA` and filter year range
 
-For this exploration, I will simply drop all rows that have any `NA` variables.
-
-In the future, it would be interesting to train a model on the sequence data that accompanies this dataset, to see if I could fill in missing values based on sequence data.
+For this exploration, I will simply drop all rows that have any `NA` variables. I will also restrict the year range to [2000, 2018)
 
 ```{r}
 pdb_clean <- pdb %>%
-  drop_na()
+  drop_na() %>%
+  filter(publicationYear >= 2000, publicationYear < 2018)
 ```
 
-## Exploratory Visualization
+## Exploratory Visualization and Analysis
 
-### 
+### Publications per year
+
+```{r}
+pdb_clean %>%
+  group_by(publicationYear) %>%
+  summarize(publicationCount = n()) %>%
+  ggplot(aes(x = publicationYear, y = publicationCount)) +
+    geom_line() +
+    labs(
+      title = "Publication count versus year"
+    ) +
+    xlab("year") +
+    ylab("publication count")
+```
+
+### Macromolecule type by year
+
+As time progressed, what different types of macromolecules were published? In other words, did technology progress and allow more types of macromolecules to be analyzed?
+
+```{r}
+pdb_clean %>%
+  group_by(publicationYear, macromoleculeType) %>%
+  summarize(publicationCount = n()) %>%
+  ggplot(aes(x = publicationYear, y = publicationCount)) +
+    geom_line() +
+    facet_wrap(~ macromoleculeType, scales = "free_y")
+```
+
+Some of these facets are really spikey! I wonder if that is because of all the rows I dropped earlier.
+
+### Molecular weight by experimental technique
 
 ```{r}
 ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) +
@@ -116,8 +153,33 @@ ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) 
   scale_y_log10() +
   coord_flip() +
   labs(
-    title = "Molecular weights by experimental technique"
+    title = "Molecular weight by experimental technique"
   ) +
   ylab("log(molecular weight)") +
   xlab("experimental technique")
 ```
+
+### Resolution by experimental technique
+
+```{r}
+ggplot(pdb_clean, aes(x = experimentalTechnique, y = resolution)) +
+  geom_boxplot() +
+  coord_flip() +
+  labs(
+    title = "Resolution by experimental technique"
+  ) +
+  ylab("resolution (angstroms)") +
+  xlab("experimental technique")
+```
+
+## Conclusion
+
+In the future, it would be interesting to:
+
+- Train a model on the sequence data that accompanies this dataset, to see if I could fill in missing values based on sequence data.
+
+- Find if there were any systematic features missing for each `macromoleculeType`. Maybe each macro molecule should get its own schema of attributes that are likely to be filled in.
+
+- Mine the text of `pdbxDetails`.
+
+- Mine the text of `crystallizationMethod`.
