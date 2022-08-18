@@ -95,7 +95,7 @@ Number of observations remaining if all the `NA`s were dropped.
 pdb_total_rows - pdb_no_na_count
 ```
 
-### Plan of action.
+### Plan of action: drop rows with `NA`
 
 For this exploration, I will simply drop all rows that have any `NA` variables.
 
@@ -106,3 +106,18 @@ pdb_clean <- pdb %>%
   drop_na()
 ```
 
+## Exploratory Visualization
+
+### 
+
+```{r}
+ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) +
+  geom_boxplot() +
+  scale_y_log10() +
+  coord_flip() +
+  labs(
+    title = "Molecular weights by experimental technique"
+  ) +
+  ylab("log(molecular weight)") +
+  xlab("experimental technique")
+```
