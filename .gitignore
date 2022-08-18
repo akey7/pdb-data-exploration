@@ -37,3 +37,12 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Ignore macOS junk
+.DS_Store
+
+# Ignore .Rproj
+*.Rproj
+
+# Ignore data csvs (these are stored elsewhere)
+data/*.csv
