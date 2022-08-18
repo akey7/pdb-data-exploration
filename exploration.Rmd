@@ -16,28 +16,29 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Libraries
 
 ```{r error=FALSE, warning=FALSE}
-library(dplyr)
-library(tidyr)
-library(readr)
-library(ggplot2)
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(ggplot2))
 ```
 
-### Theme set
+### Set theme and `dplyr` options
 
 ```{r}
 theme_set(theme_minimal())
+options(dplyr.summarise.inform = FALSE)
 ```
 
 ## Load the dataset
 
-```{r}
-pdb <- read_csv("data/pdb_data_no_dups.csv")
+```{r error=FALSE, warning=FALSE}
+pdb <- read_csv("data/pdb_data_no_dups.csv", show_col_types = FALSE)
 ```
 
 ### Look at the head of the dataset
 
 ```{r}
-head(pdb)
+knitr::kable(head(pdb))
 ```
 
 ## Missing data
@@ -105,7 +106,9 @@ pdb_total_rows - pdb_no_na_count
 
 ### Plan of action: drop rows with `NA` and filter year range
 
-For this exploration, I will simply drop all rows that have any `NA` variables. I will also restrict the year range to [2000, 2018)
+For this exploration, I will simply drop all rows that have any `NA` variables. I will also restrict the year range to [2000, 2018).
+
+However, there are some plots where I don't restrict input data in this way. I will call them out below.
 
 ```{r}
 pdb_clean <- pdb %>%
@@ -115,35 +118,24 @@ pdb_clean <- pdb %>%
 
 ## Exploratory Visualization and Analysis
 
-### Publications per year
+### Publications per macromolecule type
 
-```{r}
-pdb_clean %>%
-  group_by(publicationYear) %>%
-  summarize(publicationCount = n()) %>%
-  ggplot(aes(x = publicationYear, y = publicationCount)) +
-    geom_line() +
-    labs(
-      title = "Publication count versus year"
-    ) +
-    xlab("year") +
-    ylab("publication count")
-```
-
-### Macromolecule type by year
+On partially cleaned data, with rows not having both a publicationYear and macromoleculeType being dropped.
 
 As time progressed, what different types of macromolecules were published? In other words, did technology progress and allow more types of macromolecules to be analyzed?
 
+Overall, it looks like proteins are by far the most dominant molecules being analyzed.
+
 ```{r}
-pdb_clean %>%
-  group_by(publicationYear, macromoleculeType) %>%
+pdb %>%
+  drop_na(publicationYear, macromoleculeType) %>%
+  filter(publicationYear >= 2000, publicationYear < 2018) %>%
+  group_by(macromoleculeType, publicationYear) %>%
   summarize(publicationCount = n()) %>%
   ggplot(aes(x = publicationYear, y = publicationCount)) +
     geom_line() +
     facet_wrap(~ macromoleculeType, scales = "free_y")
 ```
-
-Some of these facets are really spikey! I wonder if that is because of all the rows I dropped earlier.
 
 ### Molecular weight by experimental technique
 
@@ -157,6 +149,24 @@ ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) 
   ) +
   ylab("log(molecular weight)") +
   xlab("experimental technique")
+```
+
+### densityMatthews
+
+Mathews density as described in [Matthews coefficient probabilities: Improved estimates for unit cell contents of proteins, DNA, and protein–nucleic acid complex crystals](https://onlinelibrary.wiley.com/doi/full/10.1110/ps.0350503).
+
+```{r}
+ggplot(pdb_clean, aes(x = densityMatthews)) +
+  geom_histogram(bins = 100)
+```
+
+### densityPercentSol
+
+I wonder if these could be tied back to crystallization methods or crystallization temperature.
+
+```{r}
+ggplot(pdb_clean, aes(x = densityPercentSol)) +
+  geom_histogram(bins = 100)
 ```
 
 ### Resolution by experimental technique
@@ -180,6 +190,9 @@ In the future, it would be interesting to:
 
 - Find if there were any systematic features missing for each `macromoleculeType`. Maybe each macro molecule should get its own schema of attributes that are likely to be filled in.
 
-- Mine the text of `pdbxDetails`.
+- Mine the text of `pdbxDetails`. Perhaps these could correlated with things like ph, resolution, experimental method, etc.
 
-- Mine the text of `crystallizationMethod`.
+- Mine the text of `crystallizationMethod`. Perhaps these could correlated with things like ph, resolution, experimental method, etc.
+
+- Mine the text of `classification`.
+
