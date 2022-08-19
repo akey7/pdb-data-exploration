@@ -118,9 +118,7 @@ pdb_clean <- pdb %>%
 
 ## Exploratory Visualization and Analysis
 
-### Publications per macromolecule type
-
-#### Publications per macromolecule type, total up to 2018
+### Publications per macromolecule type, total up to 2018
 
 Only drop the rows that have no `macromolecule` or `publicationYear` type.
 
@@ -138,20 +136,21 @@ knitr::kable(pdb_publication_count_all_time)
 ```{r}
 ggplot(pdb_publication_count_all_time, aes(x = 1, y = publicationCount, fill = macromoleculeType)) +
   geom_col(position = "stack") +
-  scale_fill_viridis_d()
+  scale_fill_viridis_d() +
+  labs(title = "Number of publications by macromolecule type") +
+  ylab("publication count")
 ```
 
-#### Publications per macromolecule type per year
-
-As time progressed, what different types of macromolecules were published?
+#### Publications per year, 2000 to 2017
 
 ```{r}
 pdb_clean %>%
-  group_by(macromoleculeType, publicationYear) %>%
+  group_by(publicationYear) %>%
   summarize(publicationCount = n()) %>%
   ggplot(aes(x = publicationYear, y = publicationCount)) +
     geom_line() +
-    facet_wrap(~ macromoleculeType, scales = "free_y")
+    labs(title = "Publications per year") +
+    ylab("publication count")
 ```
 
 ### Experimental techniques
@@ -185,25 +184,9 @@ ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) 
   xlab("experimental technique")
 ```
 
-### densityMatthews
+### Other variables
 
-Mathews density as described in [Matthews coefficient probabilities: Improved estimates for unit cell contents of proteins, DNA, and protein–nucleic acid complex crystals](https://onlinelibrary.wiley.com/doi/full/10.1110/ps.0350503).
-
-```{r}
-ggplot(pdb_clean, aes(x = densityMatthews)) +
-  geom_histogram(bins = 100)
-```
-
-### densityPercentSol
-
-I wonder if these could be tied back to crystallization methods or crystallization temperature.
-
-```{r}
-ggplot(pdb_clean, aes(x = densityPercentSol)) +
-  geom_histogram(bins = 100)
-```
-
-### Resolution by experimental technique
+#### Resolution by experimental technique
 
 ```{r}
 ggplot(pdb_clean, aes(x = experimentalTechnique, y = resolution)) +
@@ -216,6 +199,31 @@ ggplot(pdb_clean, aes(x = experimentalTechnique, y = resolution)) +
   xlab("experimental technique")
 ```
 
+#### densityMatthews
+
+Mathews density as described in [Matthews coefficient probabilities: Improved estimates for unit cell contents of proteins, DNA, and protein–nucleic acid complex crystals](https://onlinelibrary.wiley.com/doi/full/10.1110/ps.0350503).
+
+```{r}
+ggplot(pdb_clean, aes(x = densityMatthews)) +
+  geom_histogram(bins = 100)
+```
+
+#### densityPercentSol
+
+I wonder if these could be tied back to crystallization methods or crystallization temperature.
+
+```{r}
+ggplot(pdb_clean, aes(x = densityPercentSol)) +
+  geom_histogram(bins = 100)
+```
+
+#### pH
+
+```{r}
+ggplot(pdb_clean, aes(x = phValue)) +
+  geom_histogram(bins = 100)
+```
+
 ## Classification column
 
 For this section, only apply cleaning to the `classification` column.
@@ -225,8 +233,7 @@ For this section, only apply cleaning to the `classification` column.
 What are the top 10 classifications?
 
 ```{r}
-top_classifications <- pdb %>%
-  drop_na(classification) %>%
+top_classifications <- pdb_clean %>%
   group_by(classification) %>%
   summarize(classification_count = n()) %>%
   arrange(desc(classification_count))
@@ -246,5 +253,5 @@ In the future, it would be interesting to:
 
 - Mine the text of `crystallizationMethod`. Perhaps these could correlated with things like ph, resolution, experimental method, etc.
 
-- Mine the text of `classification`.
+- Mine the text of `classification` since there are so many unique values in that column.
 
