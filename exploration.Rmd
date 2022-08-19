@@ -182,6 +182,23 @@ ggplot(pdb_clean, aes(x = experimentalTechnique, y = resolution)) +
   xlab("experimental technique")
 ```
 
+## Classification column
+
+For this section, only apply cleaning to the `classification` column.
+
+### Top classifications
+
+What are the top 10 classifications?
+
+```{r}
+pdb %>%
+  drop_na(classification) %>%
+  group_by(classification) %>%
+  summarize(classification_count = n()) %>%
+  arrange(desc(classification_count)) %>%
+  head(10)
+```
+
 ## Conclusion
 
 In the future, it would be interesting to:
