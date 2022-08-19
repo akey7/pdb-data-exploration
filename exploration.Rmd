@@ -217,13 +217,6 @@ ggplot(pdb_clean, aes(x = densityPercentSol)) +
   geom_histogram(bins = 100)
 ```
 
-#### pH
-
-```{r}
-ggplot(pdb_clean, aes(x = phValue)) +
-  geom_histogram(bins = 100)
-```
-
 ## Classification column
 
 For this section, only apply cleaning to the `classification` column.
