@@ -7,6 +7,8 @@ output: html_document
 
 # Exploration of PDB Metadata
 
+The Protein DataBank (PDB) stores files that contain the structure of "proteins, nucleic acids, and complex assemblies." These structures are essential tools for research in structural biology, biochemistry, and related fields. I was recently browsing Kaggle for datasets and found a scrape of PDB data up to the year 2018 by Shahir. The data included sequence information as well as metadata about those sequences. Kaggle suggests these data as a multi-class classification exercise. For this post, I am interested in exploring the metadata to find the data stored in the database and trends in how researchers collected those data.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -106,9 +108,7 @@ pdb_total_rows - pdb_no_na_count
 
 ### Plan of action: drop rows with `NA` and filter year range
 
-For this exploration, I will simply drop all rows that have any `NA` variables. I will also restrict the year range to [2000, 2018).
-
-However, there are some plots where I don't restrict input data in this way. I will call them out below.
+For this exploration, I will simply drop all rows that have any `NA` variables. I will also restrict the year range to  2000 to 2018.
 
 ```{r}
 pdb_clean <- pdb %>%
@@ -120,16 +120,33 @@ pdb_clean <- pdb %>%
 
 ### Publications per macromolecule type
 
-On partially cleaned data, with rows not having both a publicationYear and macromoleculeType being dropped.
+#### Publications per macromolecule type, total up to 2018
 
-As time progressed, what different types of macromolecules were published? In other words, did technology progress and allow more types of macromolecules to be analyzed?
+Only drop the rows that have no `macromolecule` or `publicationYear` type.
 
 Overall, it looks like proteins are by far the most dominant molecules being analyzed.
 
 ```{r}
-pdb %>%
-  drop_na(publicationYear, macromoleculeType) %>%
-  filter(publicationYear >= 2000, publicationYear < 2018) %>%
+pdb_publication_count_all_time <- pdb_clean %>%
+  group_by(macromoleculeType) %>%
+  summarize(publicationCount = n()) %>%
+  arrange(desc(publicationCount))
+
+knitr::kable(pdb_publication_count_all_time)
+```
+
+```{r}
+ggplot(pdb_publication_count_all_time, aes(x = 1, y = publicationCount, fill = macromoleculeType)) +
+  geom_col(position = "stack") +
+  scale_fill_viridis_d()
+```
+
+#### Publications per macromolecule type per year
+
+As time progressed, what different types of macromolecules were published?
+
+```{r}
+pdb_clean %>%
   group_by(macromoleculeType, publicationYear) %>%
   summarize(publicationCount = n()) %>%
   ggplot(aes(x = publicationYear, y = publicationCount)) +
@@ -137,7 +154,24 @@ pdb %>%
     facet_wrap(~ macromoleculeType, scales = "free_y")
 ```
 
-### Molecular weight by experimental technique
+### Experimental techniques
+
+#### Distribution of experimental techniques
+
+Virtually all the publications in the cleaned dataset were from x-ray diffraction.
+
+```{r}
+pdb_techique_counts <- pdb_clean %>%
+  group_by(experimentalTechnique) %>%
+  summarize(publicationCount = n()) %>%
+  arrange(desc(publicationCount))
+
+knitr::kable(pdb_techique_counts)
+```
+
+#### Molecular weight by experimental technique
+
+It looks like x-ray diffraction has the widest range of molecular weights...but there are far more x-ray diffraction observations in the cleaned dataset.
 
 ```{r}
 ggplot(pdb_clean, aes(x = experimentalTechnique, y = structureMolecularWeight)) +
