@@ -191,12 +191,13 @@ For this section, only apply cleaning to the `classification` column.
 What are the top 10 classifications?
 
 ```{r}
-pdb %>%
+top_classifications <- pdb %>%
   drop_na(classification) %>%
   group_by(classification) %>%
   summarize(classification_count = n()) %>%
-  arrange(desc(classification_count)) %>%
-  head(10)
+  arrange(desc(classification_count))
+
+knitr::kable(head(top_classifications, 5))
 ```
 
 ## Conclusion
