@@ -1,11 +1,11 @@
 ---
-title: "Exploration of PDB Metadata"
+title: "PDB Data Exploration"
 author: "Alicia Key"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Exploration of PDB Metadata
+# PDB Data Exploration
 
 The Protein DataBank (PDB) stores files that contain the structure of "proteins, nucleic acids, and complex assemblies." These structures are essential tools for research in structural biology, biochemistry, and related fields. I was recently browsing Kaggle for datasets and found a scrape of PDB data up to the year 2018 by Shahir. The data included sequence information as well as metadata about those sequences. Kaggle suggests these data as a multi-class classification exercise. For this post, I am interested in exploring the metadata to find the data stored in the database and trends in how researchers collected those data.
 
